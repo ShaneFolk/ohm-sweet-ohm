@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Righteous, Nunito, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
+import SiteHeader from "./components/SiteHeader";
 
 // Retro display font for headings
 const righteous = Righteous({
@@ -33,7 +34,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${righteous.variable} ${nunito.variable} ${plexMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col font-sans">{children}</body>
+      <body className="min-h-full flex flex-col font-sans">
+        <SiteHeader />
+        {children}
+      </body>
     </html>
   );
 }

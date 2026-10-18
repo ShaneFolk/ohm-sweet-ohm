@@ -1,9 +1,13 @@
 import { query } from "@/lib/db";
+import { requireUser } from "@/lib/auth";
 
-// GET /api/departments: list all departments.
-// TODO (Phase 2): require a logged-in user with requireUser(). It's public for
-// now only because sessions don't exist yet and Phase 1 tests it in the browser.
+// GET /api/departments: list all departments. Any logged-in user.
 export async function GET() {
+  // Reading the session cookie also tells Next.js this route runs per request,
+  // so it never tries to run the database query at build time.
+  const user = await requireUser();
+  if (user instanceof Response) return user;
+
   try {
     const departments = await query<{ id: number; name: string }>(
       "SELECT id, name FROM departments ORDER BY id"
