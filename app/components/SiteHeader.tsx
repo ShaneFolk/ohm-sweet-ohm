@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { getSessionUser } from "@/lib/auth";
+import { getSessionUser, isDemoAccount } from "@/lib/auth";
+import DemoRoleToggle from "./DemoRoleToggle";
 import LogoutButton from "./LogoutButton";
 
 // The logo part is static. Only UserMenu reads the session cookie, so it sits
@@ -25,13 +26,17 @@ async function UserMenu() {
   if (!user) return null;
 
   return (
-    <div className="flex items-center gap-3 text-sm">
+    <div className="flex flex-wrap items-center gap-3 text-sm">
       <span>
         Hi, <span className="font-bold">{user.firstName}</span>
-        <span className="ml-2 rounded-full bg-cream-dark px-2 py-0.5 text-xs font-bold">
-          {user.role === "it_staff" ? "IT Tech" : "Employee"}
-        </span>
+        {/* Demo accounts get the toggle instead of a plain role badge */}
+        {!isDemoAccount(user.email) && (
+          <span className="ml-2 rounded-full bg-cream-dark px-2 py-0.5 text-xs font-bold">
+            {user.role === "it_staff" ? "IT Tech" : "Employee"}
+          </span>
+        )}
       </span>
+      {isDemoAccount(user.email) && <DemoRoleToggle role={user.role} />}
       <LogoutButton />
     </div>
   );
