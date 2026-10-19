@@ -10,7 +10,7 @@ export default function SiteHeader() {
   return (
     <header className="border-b-4 border-chrome bg-white/60">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <Link href="/" className="font-display text-xl text-teal sm:text-2xl">
+        <Link href="/tickets" className="font-display text-xl text-teal sm:text-2xl">
           Ohm Sweet Ohm <span className="text-orange">IT Support</span>
         </Link>
         <Suspense fallback={null}>
@@ -27,6 +27,11 @@ async function UserMenu() {
 
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
+      {user.role === "it_staff" && (
+        <Link href="/admin/logs" className="font-bold text-teal hover:underline">
+          Activity log
+        </Link>
+      )}
       <span>
         Hi, <span className="font-bold">{user.firstName}</span>
         {/* Demo accounts get the toggle instead of a plain role badge */}

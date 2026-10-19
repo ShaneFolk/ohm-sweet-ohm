@@ -23,6 +23,13 @@ export async function findUserByEmail(email: string): Promise<UserRow | null> {
   return rows[0] ?? null;
 }
 
+/** IT staff, for the "assign a tech" dropdown. */
+export function listTechs() {
+  return query<{ id: number; name: string }>(
+    "SELECT id, first_name || ' ' || last_name AS name FROM users WHERE role = 'it_staff' ORDER BY first_name"
+  );
+}
+
 export function toSessionUser(row: UserRow): SessionUser {
   return { id: row.id, email: row.email, firstName: row.first_name, role: row.role };
 }

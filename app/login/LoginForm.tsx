@@ -45,9 +45,8 @@ export default function LoginForm() {
         return;
       }
       // refresh() re-renders the server parts (like the header) with the new cookie.
-      // TODO (Phase 3): send people to /tickets once it exists.
       loggedIn.current = true;
-      router.replace("/");
+      router.replace("/tickets");
       router.refresh();
     } catch {
       setError("Couldn't reach the server. Please try again.");

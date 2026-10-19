@@ -21,9 +21,11 @@ export async function parseBody<T extends z.ZodType>(
 
   const result = schema.safeParse(raw);
   if (!result.success) {
-    // fieldErrors says which field was wrong, e.g. { title: ["Too small"] }
+    // fieldErrors says which field was wrong, e.g. { title: ["Too small"] }.
+    // formErrors are rules about the whole body, e.g. "send at least one field".
+    const { fieldErrors, formErrors } = z.flattenError(result.error);
     return Response.json(
-      { error: "Invalid request", fields: z.flattenError(result.error).fieldErrors },
+      { error: formErrors[0] ?? "Invalid request", fields: fieldErrors },
       { status: 400 }
     );
   }

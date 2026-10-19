@@ -3,8 +3,9 @@ import { COOKIE_NAME, verifySessionToken } from "@/lib/session-token";
 
 // Runs before every page loads (Next.js 16's name for "middleware").
 // It only checks the signed cookie, with no database call, to decide where to send people:
+//   - "/"                                 -> /tickets (or /login if logged out)
 //   - logged out, any page except /login  -> /login
-//   - logged in, visiting /login          -> home
+//   - logged in, visiting /login          -> /tickets
 //   - employee, visiting /admin/*         -> /tickets
 // This is a convenience, not the security wall: API routes still check the
 // session themselves, and so will pages that load data (Phase 3+).
@@ -12,9 +13,13 @@ export async function proxy(request: NextRequest) {
   const user = await verifySessionToken(request.cookies.get(COOKIE_NAME)?.value);
   const onLogin = request.nextUrl.pathname === "/login";
 
+  // There's no home page: "/" goes straight to the ticket list (or login).
+  if (request.nextUrl.pathname === "/") {
+    return NextResponse.redirect(new URL(user ? "/tickets" : "/login", request.url));
+  }
+
   if (user && onLogin) {
-    // TODO (Phase 3): send to /tickets once it exists.
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/tickets", request.url));
   }
 
   // IT-only pages. Employees (including right after a demo switch) go to /tickets.

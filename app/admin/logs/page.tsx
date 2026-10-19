@@ -1,0 +1,85 @@
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { listActivity } from "@/lib/activity";
+import { getSessionUser } from "@/lib/auth";
+import { formatDate } from "@/lib/format";
+
+export const metadata: Metadata = { title: "Activity log | Ohm Sweet Ohm IT Support" };
+
+// The amber "terminal" from the theme: monospace amber text on dark brown.
+export default function ActivityLogPage() {
+  return (
+    <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+      <h1 className="font-display text-3xl text-teal sm:text-4xl">Activity Log</h1>
+      <p className="mb-5 mt-2">Every change at the help desk, newest first (latest 100).</p>
+
+      <div className="overflow-hidden rounded-3xl border-4 border-chrome bg-terminal shadow-[0_6px_0_var(--color-chrome)]">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-amber/30 px-4 py-2 font-mono text-xs text-amber/80">
+          <span>TOMORROW INDUSTRIES · MAINFRAME LOG</span>
+          {/* Decorative control-panel lamps, like an old mainframe. */}
+          <div aria-hidden="true" className="flex gap-4">
+            <Lamp label="Power" color="var(--color-orange)" />
+            <Lamp label="Tape" color="var(--color-mustard)" />
+            <Lamp label="Ready" color="var(--color-status-open)" pulse />
+          </div>
+        </div>
+        <Suspense fallback={<p className="p-5 font-mono text-amber">LOADING TAPE REEL…</p>}>
+          <LogLines />
+        </Suspense>
+      </div>
+    </main>
+  );
+}
+
+// A small glowing bulb with a label under it. `pulse` makes it glow softly
+// (skipped for people who've asked their computer to reduce motion).
+function Lamp({ label, color, pulse }: { label: string; color: string; pulse?: boolean }) {
+  return (
+    <span className="flex flex-col items-center gap-1">
+      <span
+        className={`h-3 w-3 rounded-full border border-black/30 ${pulse ? "motion-safe:animate-pulse" : ""}`}
+        style={{ backgroundColor: color, boxShadow: `0 0 6px 1px ${color}` }}
+      />
+      <span className="text-[0.6rem] uppercase tracking-widest text-amber/70">{label}</span>
+    </span>
+  );
+}
+
+async function LogLines() {
+  // proxy.ts already redirects employees; this is the real check.
+  const user = await getSessionUser();
+  if (!user) redirect("/login");
+  if (user.role !== "it_staff") redirect("/tickets");
+
+  const logs = await listActivity(user);
+
+  if (logs.length === 0) {
+    return <p className="p-5 font-mono text-amber">&gt; NO ACTIVITY YET. ALL SYSTEMS NOMINAL.</p>;
+  }
+
+  return (
+    <ol className="max-h-[70vh] overflow-y-auto p-4 font-mono text-sm leading-relaxed text-amber sm:p-5">
+      {logs.map((l) => (
+        // Each entry wraps on narrow screens instead of scrolling sideways.
+        <li key={l.id} className="border-b border-amber/10 py-2 last:border-0">
+          <span className="text-amber/60">[{formatDate(l.created_at)}]</span>{" "}
+          <span className="font-semibold uppercase">{l.action.replace(/_/g, " ")}</span>{" "}
+          {l.ticket_id && (
+            <Link href={`/tickets/${l.ticket_id}`} className="underline decoration-amber/40 hover:decoration-amber">
+              #{l.ticket_id}
+            </Link>
+          )}
+          <span className="block break-words text-amber/90 sm:inline sm:before:content-['_—_']">
+            {l.details}
+            {!l.user_name && l.user_id && <span className="text-amber/60"> (user #{l.user_id}, removed)</span>}
+          </span>
+        </li>
+      ))}
+      <li aria-hidden="true" className="pt-2">
+        &gt; <span className="motion-safe:animate-pulse">█</span>
+      </li>
+    </ol>
+  );
+}
