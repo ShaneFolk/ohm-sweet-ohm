@@ -12,7 +12,10 @@ export const metadata: Metadata = { title: "Activity log | Ohm Sweet Ohm IT Supp
 export default function ActivityLogPage({ searchParams }: PageProps<"/admin/logs">) {
   return (
     <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
-      <h1 className="font-display text-3xl text-teal sm:text-4xl">Activity Log</h1>
+      <Link href="/tickets" className="text-sm font-bold text-teal hover:underline">
+        ← Back to the Ticket Desk
+      </Link>
+      <h1 className="mt-4 font-display text-3xl text-teal sm:text-4xl">Activity Log</h1>
       <p className="mb-5 mt-2">Every change and sign-in at the help desk, newest first (latest 100).</p>
 
       <div className="overflow-hidden rounded-3xl border-4 border-chrome bg-terminal shadow-[0_6px_0_var(--color-chrome)]">
@@ -20,9 +23,9 @@ export default function ActivityLogPage({ searchParams }: PageProps<"/admin/logs
           <span>TOMORROW INDUSTRIES · MAINFRAME LOG</span>
           {/* Decorative control-panel lamps, like an old mainframe. */}
           <div aria-hidden="true" className="flex gap-4">
-            <Lamp label="Power" color="var(--color-orange)" />
+            <Lamp label="Power" color="var(--color-orange-glow)" />
             <Lamp label="Tape" color="var(--color-mustard)" />
-            <Lamp label="Ready" color="var(--color-teal)" pulse />
+            <Lamp label="Ready" color="var(--color-teal-glow)" pulse />
           </div>
         </div>
         <Suspense fallback={<p className="p-5 font-mono text-amber">LOADING TAPE REEL…</p>}>
@@ -102,7 +105,7 @@ function LogList({ logs }: { logs: ActivityEntry[] }) {
       {logs.map((l) => (
         // Each entry wraps on narrow screens instead of scrolling sideways.
         <li key={l.id} className="border-b border-amber/10 py-2 last:border-0">
-          <span className="text-amber/60">[{formatDate(l.created_at)}]</span>{" "}
+          <span className="text-amber/75">[{formatDate(l.created_at)}]</span>{" "}
           <span className="font-semibold uppercase">{l.action.replace(/_/g, " ")}</span>{" "}
           {l.ticket_id && (
             <Link href={`/tickets/${l.ticket_id}`} className="underline decoration-amber/40 hover:decoration-amber">
@@ -111,7 +114,7 @@ function LogList({ logs }: { logs: ActivityEntry[] }) {
           )}
           <span className="block break-words text-amber/90 sm:inline sm:before:content-['_—_']">
             {l.details}
-            {!l.user_name && l.user_id && <span className="text-amber/60"> (user #{l.user_id}, removed)</span>}
+            {!l.user_name && l.user_id && <span className="text-amber/75"> (user #{l.user_id}, removed)</span>}
           </span>
         </li>
       ))}

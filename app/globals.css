@@ -14,12 +14,18 @@
   --color-enamel: #fffdf7; /* the white of an old fridge door */
   --color-charcoal: #2e2b28;
 
-  /* Accents */
-  --color-teal: #1f8a8a;
-  --color-teal-dark: #156666;
-  --color-orange: #d2622a;
-  --color-orange-dark: #9c4519;
+  /* Accents. Deep enough that teal or orange text on cream, and white text on
+     teal or orange buttons, all pass the 4.5:1 contrast guideline. */
+  --color-teal: #187777;
+  --color-teal-dark: #0f5555;
+  --color-orange: #b04e1c;
+  --color-orange-dark: #7d3712;
   --color-mustard: #e0a526;
+
+  /* Brighter versions for things that glow but carry no text (the log
+     page's lamps, the loading atom) */
+  --color-teal-glow: #2aa8a8;
+  --color-orange-glow: #e36d30;
 
   /* Ticket status. Slightly deeper than the accents so small white text on
      them passes the 4.5:1 contrast guideline (in progress uses charcoal text). */
@@ -28,8 +34,7 @@
   --color-status-resolved: #3d7a31;
   --color-status-closed: #6f6a65;
 
-  /* Priority (same idea: deep enough for small white text) */
-  --color-priority-high: #b8521f;
+  /* Priority (high uses the orange accent) */
   --color-critical: #c8312b;
 
   /* Terminal page (amber on dark brown, not green on black) */

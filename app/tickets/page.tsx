@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { getSessionUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { listTickets, STATUSES, type Status } from "@/lib/tickets";
+import { EmptyCard, LoadingCard } from "../components/Atom";
+import Robot from "../components/Robot";
 import { PriorityBadge, STATUS_LABELS, StatusBadge } from "../components/Badges";
 
 export const metadata: Metadata = { title: "Tickets | Ohm Sweet Ohm IT Support" };
@@ -23,7 +25,7 @@ export default function TicketsPage({ searchParams }: PageProps<"/tickets">) {
           + New ticket
         </Link>
       </div>
-      <Suspense fallback={<LoadingCard />}>
+      <Suspense fallback={<LoadingCard message="Fetching tickets from the mainframe…" />}>
         <TicketList searchParams={searchParams} />
       </Suspense>
     </main>
@@ -67,7 +69,7 @@ async function TicketList({ searchParams }: { searchParams: PageProps<"/tickets"
       <StatusFilter current={status} />
 
       {tickets.length === 0 ? (
-        <EmptyCard filtered={!!status} />
+        <NoTickets filtered={!!status} isIT={isIT} />
       ) : (
         <ul className="grid gap-3">
           {tickets.map((t) => (
@@ -78,7 +80,7 @@ async function TicketList({ searchParams }: { searchParams: PageProps<"/tickets"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <h2 className="font-bold">
-                    <span className="text-charcoal/60">#{t.id}</span> {t.title}
+                    <span className="text-charcoal/70">#{t.id}</span> {t.title}
                   </h2>
                   <div className="flex shrink-0 gap-2">
                     <PriorityBadge priority={t.priority} />
@@ -125,21 +127,28 @@ function StatusFilter({ current }: { current?: Status }) {
   );
 }
 
-function EmptyCard({ filtered }: { filtered: boolean }) {
+function NoTickets({ filtered, isIT }: { filtered: boolean; isIT: boolean }) {
+  if (filtered) {
+    return (
+      <EmptyCard title="Nothing on this channel!">
+        <p>No tickets with that status.</p>
+      </EmptyCard>
+    );
+  }
   return (
-    <div className="rounded-2xl border-2 border-dashed border-chrome bg-white/60 p-8 text-center">
-      <p className="font-display text-xl text-teal">All quiet on the appliance front!</p>
-      <p className="mt-2">
-        {filtered ? "No tickets with that status." : "No tickets yet. Everything's humming along nicely."}
+    <EmptyCard title="All quiet on the appliance front!" art={<Robot className="h-28 w-auto" />}>
+      <p>
+        {isIT ? "No tickets anywhere. Time for a coffee break." : "No tickets yet. Everything's humming along nicely."}
       </p>
-    </div>
-  );
-}
-
-function LoadingCard() {
-  return (
-    <p className="rounded-2xl border-2 border-chrome bg-white/60 p-8 text-center font-bold text-teal">
-      Fetching tickets from the mainframe…
-    </p>
+      {!isIT && (
+        <p className="mt-3">
+          Something on the fritz?{" "}
+          <Link href="/tickets/new" className="font-bold text-teal underline hover:text-teal-dark">
+            File your first ticket
+          </Link>
+          .
+        </p>
+      )}
+    </EmptyCard>
   );
 }

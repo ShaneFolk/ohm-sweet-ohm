@@ -47,7 +47,7 @@ export default function AddNoteForm({ ticketId }: { ticketId: number }) {
         <p role="alert" className="text-sm font-bold text-critical">
           {error}
         </p>
-        <span className="text-xs text-charcoal/60">
+        <span className="text-xs text-charcoal/70">
           {note.length} / {NOTE_MAX}
         </span>
       </div>

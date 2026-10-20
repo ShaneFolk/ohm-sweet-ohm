@@ -174,7 +174,7 @@ function FieldFooter(props: { id: string; errors?: string[]; length: number; max
   return (
     <div id={props.id} className="mt-1 flex justify-between gap-3 text-xs">
       <span className="font-bold text-critical">{props.errors?.[0]}</span>
-      <span className={near ? "font-bold text-orange" : "text-charcoal/60"} aria-live="polite">
+      <span className={near ? "font-bold text-orange" : "text-charcoal/70"} aria-live="polite">
         {props.length} / {props.max}
       </span>
     </div>

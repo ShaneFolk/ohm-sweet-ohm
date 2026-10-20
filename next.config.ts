@@ -19,6 +19,10 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The About page became the home page; keep old links working.
+  async redirects() {
+    return [{ source: "/about", destination: "/", permanent: false }];
+  },
   experimental: {
     agentFeedback: true,
   },

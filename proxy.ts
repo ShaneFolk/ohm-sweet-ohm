@@ -3,20 +3,17 @@ import { COOKIE_NAME, verifySessionToken } from "@/lib/session-token";
 
 // Runs before every page loads (Next.js 16's name for "middleware").
 // It only checks the signed cookie, with no database call, to decide where to send people:
-//   - "/"                                 -> /tickets (or /login if logged out)
-//   - logged out, any page except /login  -> /login
+//   - logged out, any page except the public ones -> /login
 //   - logged in, visiting /login          -> /tickets
 //   - employee, visiting /admin/*         -> /tickets
+// Public pages (open to everyone, logged in or not): "/" (the home page) and
+// /login. Old /about links are redirected to "/" in next.config.ts.
 // This is a convenience, not the security wall: API routes still check the
 // session themselves, and so will pages that load data (Phase 3+).
 export async function proxy(request: NextRequest) {
   const user = await verifySessionToken(request.cookies.get(COOKIE_NAME)?.value);
   const onLogin = request.nextUrl.pathname === "/login";
-
-  // There's no home page: "/" goes straight to the ticket list (or login).
-  if (request.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL(user ? "/tickets" : "/login", request.url));
-  }
+  const onPublicPage = onLogin || request.nextUrl.pathname === "/";
 
   if (user && onLogin) {
     return NextResponse.redirect(new URL("/tickets", request.url));
@@ -28,7 +25,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/tickets", request.url));
   }
 
-  if (!user && !onLogin) {
+  if (!user && !onPublicPage) {
     const response = NextResponse.redirect(new URL("/login", request.url));
     // An expired or tampered cookie is useless, so clear it while we're here.
     if (request.cookies.has(COOKIE_NAME)) response.cookies.delete(COOKIE_NAME);

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import Robot from "../components/Robot";
 import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = { title: "Log in | Ohm Sweet Ohm IT Support" };
@@ -8,7 +10,8 @@ export default function LoginPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">
       <div className="w-full max-w-lg appliance-panel p-6 sm:p-10">
-        <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-orange">
+        <Robot className="mx-auto h-24 w-auto sm:h-28" />
+        <p className="mt-3 text-center text-sm font-bold uppercase tracking-[0.2em] text-orange">
           Tomorrow Industries
         </p>
         <h1 className="mt-2 text-center font-display text-3xl text-teal sm:text-4xl">
@@ -18,6 +21,12 @@ export default function LoginPage() {
           Sign in and a friendly technician will be along shortly.
         </p>
         <LoginForm />
+        <p className="mt-6 text-center text-sm">
+          New here?{" "}
+          <Link href="/"className="font-bold text-teal underline hover:text-teal-dark">
+            See what&apos;s under the hood →
+          </Link>
+        </p>
       </div>
     </main>
   );

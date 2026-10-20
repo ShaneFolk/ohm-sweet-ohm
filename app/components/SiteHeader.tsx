@@ -1,6 +1,8 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { getSessionUser, isDemoAccount } from "@/lib/auth";
+import AboutNavLink, { StaticAboutLink } from "./AboutNavLink";
+import Atom from "./Atom";
 import DemoRoleToggle from "./DemoRoleToggle";
 import LogoutButton from "./LogoutButton";
 
@@ -10,10 +12,13 @@ export default function SiteHeader() {
   return (
     <header className="border-b-4 border-chrome bg-white/60">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
-        <Link href="/tickets" className="font-display text-xl text-teal sm:text-2xl">
-          Ohm Sweet Ohm <span className="text-orange">IT Support</span>
+        <Link href="/tickets" className="flex items-center gap-2 font-display text-xl text-teal sm:text-2xl">
+          <Atom className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
+          <span>
+            Ohm Sweet Ohm <span className="text-orange">IT Support</span>
+          </span>
         </Link>
-        <Suspense fallback={null}>
+        <Suspense fallback={<StaticAboutLink />}>
           <UserMenu />
         </Suspense>
       </div>
@@ -27,10 +32,19 @@ export default function SiteHeader() {
 
 async function UserMenu() {
   const user = await getSessionUser();
-  if (!user) return null;
 
   return (
     <div className="flex flex-wrap items-center gap-3 text-sm">
+      {/* Everyone gets this, logged in or not */}
+      <AboutNavLink loggedIn={!!user} />
+      {user && <AccountControls user={user} />}
+    </div>
+  );
+}
+
+function AccountControls({ user }: { user: NonNullable<Awaited<ReturnType<typeof getSessionUser>>> }) {
+  return (
+    <>
       {user.role === "it_staff" && (
         <Link href="/admin/logs" className="font-bold text-teal hover:underline">
           Activity log
@@ -47,6 +61,6 @@ async function UserMenu() {
       </span>
       {isDemoAccount(user.email) && <DemoRoleToggle role={user.role} />}
       <LogoutButton />
-    </div>
+    </>
   );
 }

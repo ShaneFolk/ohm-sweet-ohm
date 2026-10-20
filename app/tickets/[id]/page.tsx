@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { getTicket, TicketIdSchema } from "@/lib/tickets";
 import { listTechs } from "@/lib/users";
+import { EmptyCard, LoadingCard } from "../../components/Atom";
 import { PriorityBadge, StatusBadge } from "../../components/Badges";
 import AddNoteForm from "./AddNoteForm";
 import TechControls from "./TechControls";
@@ -20,9 +21,7 @@ export default function TicketPage({ params, searchParams }: PageProps<"/tickets
       <Link href="/tickets" className="text-sm font-bold text-teal hover:underline">
         ← Back to the Ticket Desk
       </Link>
-      <Suspense
-        fallback={<p className="mt-4 rounded-2xl border-2 border-chrome bg-white/60 p-8 text-center font-bold text-teal">Pulling the file…</p>}
-      >
+      <Suspense fallback={<LoadingCard message="Pulling the file from the cabinet…" className="mt-4" />}>
         <TicketDetails params={params} searchParams={searchParams} />
       </Suspense>
     </main>
@@ -54,7 +53,7 @@ async function TicketDetails({ params, searchParams }: PageProps<"/tickets/[id]"
       <article className="mt-4 appliance-panel p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="font-display text-2xl text-teal sm:text-3xl">
-            <span className="text-charcoal/50">#{ticket.id}</span> {ticket.title}
+            <span className="text-charcoal/60">#{ticket.id}</span> {ticket.title}
           </h1>
           <div className="flex gap-2">
             <PriorityBadge priority={ticket.priority} />
@@ -72,7 +71,7 @@ async function TicketDetails({ params, searchParams }: PageProps<"/tickets/[id]"
         <h2 className="mt-6 text-sm font-bold uppercase tracking-widest text-orange">The trouble</h2>
         {/* whitespace-pre-wrap keeps the line breaks people typed */}
         <p className="mt-2 whitespace-pre-wrap break-words">
-          {ticket.description ?? <span className="italic text-charcoal/60">No details given.</span>}
+          {ticket.description ?? <span className="italic text-charcoal/70">No details given.</span>}
         </p>
       </article>
 
@@ -92,9 +91,9 @@ async function TicketDetails({ params, searchParams }: PageProps<"/tickets/[id]"
       <section className="mt-6">
         <h2 className="font-display text-xl text-teal">Notes</h2>
         {ticket.notes.length === 0 ? (
-          <p className="mt-2 rounded-2xl border-2 border-dashed border-chrome bg-white/60 p-4 text-center">
-            No notes yet. The technicians are warming up their slide rules.
-          </p>
+          <EmptyCard title="No notes yet" className="mt-2 p-5!">
+            <p>The technicians are warming up their slide rules.</p>
+          </EmptyCard>
         ) : (
           <ol className="mt-3 grid gap-3">
             {ticket.notes.map((n) => (

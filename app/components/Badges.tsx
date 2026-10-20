@@ -14,7 +14,7 @@ const STATUS: Record<Status, { label: string; className: string }> = {
 const PRIORITY: Record<Priority, { label: string; shape: string; text: string; tilt: string }> = {
   low: { label: "Low", shape: "fill-white stroke-chrome", text: "text-charcoal", tilt: "-rotate-2" },
   medium: { label: "Medium", shape: "fill-white stroke-teal", text: "text-teal", tilt: "rotate-2" },
-  high: { label: "High", shape: "fill-priority-high stroke-orange-dark", text: "text-white", tilt: "-rotate-3" },
+  high: { label: "High", shape: "fill-orange stroke-orange-dark", text: "text-white", tilt: "-rotate-3" },
   critical: { label: "Critical!", shape: "fill-critical stroke-critical", text: "text-white", tilt: "-rotate-6" },
 };
 
