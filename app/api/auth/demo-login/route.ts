@@ -1,9 +1,8 @@
 import { z } from "zod";
 import { createSession, DEMO_ACCOUNTS } from "@/lib/auth";
 import { findUserByEmail, toSessionUser } from "@/lib/users";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { parseBody } from "@/lib/validate";
-
-// TODO (Phase 5): rate-limit like the login route.
 
 const DemoLoginBody = z.object({
   role: z.enum(["employee", "it_staff"]),
@@ -13,6 +12,9 @@ const DemoLoginBody = z.object({
 // Logs in as Penny (employee) or Rex (IT tech). The server picks the account, and
 // no password is involved, so the demo password never reaches the browser.
 export async function POST(request: Request) {
+  const limited = await rateLimit("demo-login", clientIp(request));
+  if (limited) return limited;
+
   const body = await parseBody(request, DemoLoginBody);
   if (body instanceof Response) return body;
 

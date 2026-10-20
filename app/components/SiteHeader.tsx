@@ -17,6 +17,10 @@ export default function SiteHeader() {
           <UserMenu />
         </Suspense>
       </div>
+      {/* Visitors should know anything they add is temporary (see /api/cron/reset). */}
+      <p className="bg-mustard/30 px-4 py-1 text-center text-xs font-bold">
+        Demo data resets every night.
+      </p>
     </header>
   );
 }

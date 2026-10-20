@@ -4,6 +4,8 @@ import { logActivity } from "./activity";
 import type { SessionUser } from "./session-token";
 import { ownerFilter, type NewTicket, type Priority, type Status } from "./ticket-rules";
 import { fetchNotes, type Note } from "./notes";
+import { isDemoAccount } from "./auth";
+import { CAPS, CapError, hashIp } from "./caps";
 
 // All ticket reads and writes, with the permission rules built in.
 // API routes AND pages call these, so "employees only see their own tickets"
@@ -75,14 +77,34 @@ export async function getTicket(user: SessionUser, id: number): Promise<TicketDe
 /**
  * Create a ticket. submitted_by and department come from the session user,
  * never the request body; status always starts as "open".
+ * Throws CapError when a cap is reached. `ip` is the visitor's IP address.
  */
-export async function createTicket(user: SessionUser, input: NewTicket) {
-  // TODO (Phase 5): caps (10 open tickets per employee, 300 total) and rate limit.
+export async function createTicket(user: SessionUser, input: NewTicket, ip: string) {
+  // Everyone using a demo account shares one user, so for them the open-ticket
+  // cap counts per visitor (hashed IP) instead of per account.
+  const ipHash = isDemoAccount(user.email) ? hashIp(ip) : null;
+
+  const [counts] = await query<{ total: number; open: number }>(
+    `SELECT (SELECT count(*) FROM tickets)::int AS total,
+            (SELECT count(*) FROM tickets
+             WHERE submitted_by = $1 AND status IN ('open', 'in_progress')
+               AND ($2::text IS NULL OR submitter_ip_hash = $2))::int AS open`,
+    [user.id, ipHash]
+  );
+  if (counts.total >= CAPS.totalTickets) {
+    throw new CapError("The demo is full for today. It resets every night, so please try again tomorrow.");
+  }
+  if (counts.open >= CAPS.openTicketsPerUser) {
+    throw new CapError(
+      `You already have ${CAPS.openTicketsPerUser} open tickets. Please wait for some to be resolved before opening more.`
+    );
+  }
+
   const rows = await query<{ id: number }>(
-    `INSERT INTO tickets (title, description, priority, submitted_by, department_id)
-     VALUES ($1, $2, $3, $4, (SELECT department_id FROM users WHERE id = $4))
+    `INSERT INTO tickets (title, description, priority, submitted_by, department_id, submitter_ip_hash)
+     VALUES ($1, $2, $3, $4, (SELECT department_id FROM users WHERE id = $4), $5)
      RETURNING id`,
-    [input.title, input.description, input.priority, user.id]
+    [input.title, input.description, input.priority, user.id, ipHash]
   );
   const id = rows[0].id;
 

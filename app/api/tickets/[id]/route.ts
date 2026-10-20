@@ -1,6 +1,7 @@
 import { requireRole, requireUser } from "@/lib/auth";
 import { deleteTicket, updateTicket, UpdateTicketSchema } from "@/lib/ticket-admin";
 import { getTicket, TicketIdSchema } from "@/lib/tickets";
+import { rateLimit } from "@/lib/rate-limit";
 import { parseBody } from "@/lib/validate";
 
 const NOT_FOUND = { error: "Ticket not found" };
@@ -34,10 +35,12 @@ export async function GET(_request: Request, ctx: Ctx) {
 }
 
 // PATCH /api/tickets/123  { status?, priority? }: IT staff only.
-// TODO (Phase 5): rate-limit (30 writes/minute per user).
 export async function PATCH(request: Request, ctx: Ctx) {
   const user = await requireRole("it_staff");
   if (user instanceof Response) return user;
+
+  const limited = await rateLimit("write", user.id);
+  if (limited) return limited;
 
   const id = await ticketId(ctx);
   if (!id) return Response.json(NOT_FOUND, { status: 404 });
@@ -56,10 +59,12 @@ export async function PATCH(request: Request, ctx: Ctx) {
 }
 
 // DELETE /api/tickets/123: IT staff only. Notes and assignment history go with it.
-// TODO (Phase 5): rate-limit (30 writes/minute per user).
 export async function DELETE(_request: Request, ctx: Ctx) {
   const user = await requireRole("it_staff");
   if (user instanceof Response) return user;
+
+  const limited = await rateLimit("write", user.id);
+  if (limited) return limited;
 
   const id = await ticketId(ctx);
   if (!id) return Response.json(NOT_FOUND, { status: 404 });

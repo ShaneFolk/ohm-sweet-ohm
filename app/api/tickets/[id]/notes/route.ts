@@ -1,6 +1,8 @@
 import { requireUser } from "@/lib/auth";
 import { addNote, listNotes } from "@/lib/notes";
 import { NewNoteSchema, TicketIdSchema } from "@/lib/ticket-rules";
+import { capResponse, CapError } from "@/lib/caps";
+import { rateLimit } from "@/lib/rate-limit";
 import { parseBody } from "@/lib/validate";
 
 const NOT_FOUND = { error: "Ticket not found" };
@@ -36,6 +38,9 @@ export async function POST(request: Request, ctx: Ctx) {
   const user = await requireUser();
   if (user instanceof Response) return user;
 
+  const limited = await rateLimit("note", user.id);
+  if (limited) return limited;
+
   const id = await ticketId(ctx);
   if (!id) return Response.json(NOT_FOUND, { status: 404 });
 
@@ -47,6 +52,7 @@ export async function POST(request: Request, ctx: Ctx) {
     if (!note) return Response.json(NOT_FOUND, { status: 404 });
     return Response.json({ note }, { status: 201 });
   } catch (err) {
+    if (err instanceof CapError) return capResponse(err);
     console.error("POST /api/tickets/[id]/notes failed:", err);
     return Response.json({ error: "Something went wrong" }, { status: 500 });
   }

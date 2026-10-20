@@ -1,9 +1,8 @@
 import { z } from "zod";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { findUserByEmail, toSessionUser } from "@/lib/users";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { parseBody } from "@/lib/validate";
-
-// TODO (Phase 5): rate-limit to 5 attempts per minute per IP.
 
 const LoginBody = z.object({
   email: z.string().trim().toLowerCase().max(100).pipe(z.email()),
@@ -20,6 +19,10 @@ const INVALID = { error: "Invalid email or password" };
 
 // POST /api/auth/login  { email, password }
 export async function POST(request: Request) {
+  // 5 attempts per minute per IP, counted before anything else (even bad input).
+  const limited = await rateLimit("login", clientIp(request));
+  if (limited) return limited;
+
   const body = await parseBody(request, LoginBody);
   if (body instanceof Response) return Response.json(INVALID, { status: 400 });
 

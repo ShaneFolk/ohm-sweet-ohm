@@ -1,6 +1,7 @@
 import "server-only";
 import { query } from "./db";
 import { logActivity } from "./activity";
+import { CAPS, CapError } from "./caps";
 import type { SessionUser } from "./session-token";
 import { ownerFilter } from "./ticket-rules";
 
@@ -35,11 +36,27 @@ export async function listNotes(user: SessionUser, ticketId: number): Promise<No
 }
 
 /**
- * Add a note as this user. The access check and the insert are one statement,
- * so there's no gap between "may I?" and "do it". Null = no access / no ticket.
+ * Add a note as this user. Null = no access / no ticket. Throws CapError when
+ * a cap is reached. Access is checked first, so a cap message never reveals
+ * that someone else's ticket exists.
  */
 export async function addNote(user: SessionUser, ticketId: number, text: string): Promise<Note | null> {
-  // TODO (Phase 5): caps (20 notes per ticket, 1000 total) and rate limit (10/minute).
+  const [check] = await query<{ ok: boolean; on_ticket: number; total: number }>(
+    `SELECT ${CAN_SEE_TICKET} AS ok,
+            (SELECT count(*) FROM ticket_notes WHERE ticket_id = $1)::int AS on_ticket,
+            (SELECT count(*) FROM ticket_notes)::int AS total`,
+    [ticketId, ownerFilter(user)]
+  );
+  if (!check.ok) return null;
+  if (check.total >= CAPS.totalNotes) {
+    throw new CapError("The demo is full for today. It resets every night, so please try again tomorrow.");
+  }
+  if (check.on_ticket >= CAPS.notesPerTicket) {
+    throw new CapError(`This ticket has reached the limit of ${CAPS.notesPerTicket} notes.`);
+  }
+
+  // The access check is repeated inside the insert, so there's no gap
+  // between "may I?" and "do it".
   const rows = await query<{ id: number }>(
     `INSERT INTO ticket_notes (ticket_id, user_id, note)
      SELECT $1::int, $3::int, $4::text WHERE ${CAN_SEE_TICKET}

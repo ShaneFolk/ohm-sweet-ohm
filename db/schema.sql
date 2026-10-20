@@ -30,6 +30,9 @@ CREATE TABLE tickets (
   submitted_by INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   assigned_to INT REFERENCES users(id) ON DELETE SET NULL,
   department_id INT REFERENCES departments(id),
+  -- Demo accounts only: a one-way hash of the visitor's IP, so the open-ticket
+  -- cap is per visitor instead of shared by everyone using Penny. Never returned.
+  submitter_ip_hash TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );

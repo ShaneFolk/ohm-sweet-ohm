@@ -15,6 +15,11 @@ export default function DemoRoleToggle({ role }: { role: Role }) {
     setError("");
     try {
       const res = await fetch("/api/auth/demo-switch", { method: "POST" });
+      if (res.status === 429) {
+        setError("Too many switches. Wait a minute.");
+        setPending(false);
+        return;
+      }
       if (!res.ok) throw new Error();
       // Full reload of the current page as the new user, so nothing from the
       // previous account lingers. Pages the new role can't see redirect on the

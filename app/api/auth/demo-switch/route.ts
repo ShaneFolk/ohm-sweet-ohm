@@ -1,7 +1,6 @@
 import { createSession, DEMO_ACCOUNTS, isDemoAccount, requireUser } from "@/lib/auth";
+import { rateLimit } from "@/lib/rate-limit";
 import { findUserByEmail, toSessionUser } from "@/lib/users";
-
-// TODO (Phase 5): rate-limit like other writes.
 
 // POST /api/auth/demo-switch (no body)
 // Penny <-> Rex. Only works if you're already logged in as one of them; the
@@ -14,6 +13,9 @@ export async function POST() {
   if (!isDemoAccount(user.email)) {
     return Response.json({ error: "Only demo accounts can switch roles" }, { status: 403 });
   }
+
+  const limited = await rateLimit("write", user.id);
+  if (limited) return limited;
 
   try {
     const targetRole = user.role === "employee" ? "it_staff" : "employee";
