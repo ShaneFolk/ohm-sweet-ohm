@@ -12,22 +12,35 @@ export type ActivityEntry = {
   created_at: Date;
 };
 
+// Sign-in events. Everything else in the log is about tickets.
+// (Failed logins are never logged: the log is visible to the public demo IT
+// account, so a mistyped real email would be on show.)
+export const LOGIN_ACTIONS = ["user_login", "role_switched"];
+
+export const LOG_FILTERS = ["all", "tickets", "logins"] as const;
+export type LogFilter = (typeof LOG_FILTERS)[number];
+
 /** The latest 100 log entries, newest first. IT staff only. */
-export async function listActivity(user: SessionUser) {
+export async function listActivity(user: SessionUser, filter: LogFilter = "all") {
   if (user.role !== "it_staff") throw new Error("IT staff only");
-  // LEFT JOIN: the log has no foreign keys, so the user may be gone.
+  // $1 = the login actions, $2 = the filter. LEFT JOIN: the log has no
+  // foreign keys, so the user may be gone.
   return query<ActivityEntry>(
     `SELECT l.id, l.action, l.user_id, u.first_name AS user_name, l.ticket_id, l.details, l.created_at
      FROM activity_logs l LEFT JOIN users u ON u.id = l.user_id
+     WHERE $2 = 'all'
+        OR ($2 = 'logins' AND l.action = ANY($1::text[]))
+        OR ($2 = 'tickets' AND NOT l.action = ANY($1::text[]))
      ORDER BY l.created_at DESC, l.id DESC
-     LIMIT 100`
+     LIMIT 100`,
+    [LOGIN_ACTIONS, filter]
   );
 }
 
 type Activity = {
   action: string; // e.g. "ticket_created"
   userId: number;
-  ticketId: number | null;
+  ticketId: number | null; // null for logins
   details: string; // human-readable, shown on the activity log page
   detailsJson?: Record<string, unknown>; // any extra structured info
 };

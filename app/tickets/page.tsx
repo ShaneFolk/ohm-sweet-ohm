@@ -74,7 +74,7 @@ async function TicketList({ searchParams }: { searchParams: PageProps<"/tickets"
             <li key={t.id}>
               <Link
                 href={`/tickets/${t.id}`}
-                className="block rounded-2xl border-2 border-chrome bg-white/80 p-4 shadow-[0_3px_0_var(--color-chrome)] transition hover:border-teal"
+                className="appliance-card block p-4 transition hover:border-teal motion-safe:hover:-translate-y-0.5"
               >
                 <div className="flex flex-wrap items-start justify-between gap-2">
                   <h2 className="font-bold">

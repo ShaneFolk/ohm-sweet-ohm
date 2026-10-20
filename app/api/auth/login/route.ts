@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logActivity } from "@/lib/activity";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { findUserByEmail, toSessionUser } from "@/lib/users";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
@@ -33,6 +34,13 @@ export async function POST(request: Request) {
 
     const sessionUser = toSessionUser(user);
     await createSession(sessionUser);
+    // Only successful logins are logged (see LOGIN_ACTIONS in lib/activity.ts).
+    await logActivity({
+      action: "user_login",
+      userId: user.id,
+      ticketId: null,
+      details: `${user.first_name} logged in`,
+    });
     return Response.json({ user: sessionUser });
   } catch (err) {
     console.error("POST /api/auth/login failed:", err);

@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Log in | Ohm Sweet Ohm IT Support" }
 export default function LoginPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg rounded-3xl border-4 border-chrome bg-white/70 p-6 shadow-[0_6px_0_var(--color-chrome)] sm:p-10">
+      <div className="w-full max-w-lg appliance-panel p-6 sm:p-10">
         <p className="text-center text-sm font-bold uppercase tracking-[0.2em] text-orange">
           Tomorrow Industries
         </p>

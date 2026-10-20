@@ -51,7 +51,7 @@ async function TicketDetails({ params, searchParams }: PageProps<"/tickets/[id]"
         </p>
       )}
 
-      <article className="mt-4 rounded-3xl border-4 border-chrome bg-white/70 p-6 shadow-[0_6px_0_var(--color-chrome)] sm:p-8">
+      <article className="mt-4 appliance-panel p-6 sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="font-display text-2xl text-teal sm:text-3xl">
             <span className="text-charcoal/50">#{ticket.id}</span> {ticket.title}
@@ -98,7 +98,7 @@ async function TicketDetails({ params, searchParams }: PageProps<"/tickets/[id]"
         ) : (
           <ol className="mt-3 grid gap-3">
             {ticket.notes.map((n) => (
-              <li key={n.id} className="rounded-2xl border-2 border-chrome bg-white/80 p-4">
+              <li key={n.id} className="appliance-card p-4">
                 <p className="whitespace-pre-wrap break-words">{n.note}</p>
                 <p className="mt-2 text-xs text-charcoal/70">
                   {n.user_name} · {formatDate(n.created_at)}

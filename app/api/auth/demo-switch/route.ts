@@ -1,4 +1,5 @@
 import { createSession, DEMO_ACCOUNTS, isDemoAccount, requireUser } from "@/lib/auth";
+import { logActivity } from "@/lib/activity";
 import { rateLimit } from "@/lib/rate-limit";
 import { findUserByEmail, toSessionUser } from "@/lib/users";
 
@@ -24,6 +25,13 @@ export async function POST() {
 
     const sessionUser = toSessionUser(target);
     await createSession(sessionUser); // replaces the old cookie
+    // Logged as the account switched TO, so it shows up as that person's sign-in.
+    await logActivity({
+      action: "role_switched",
+      userId: target.id,
+      ticketId: null,
+      details: `${user.firstName} switched to ${target.first_name} (demo)`,
+    });
     return Response.json({ user: sessionUser });
   } catch (err) {
     console.error("POST /api/auth/demo-switch failed:", err);

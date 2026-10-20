@@ -30,7 +30,7 @@ export default function AddNoteForm({ ticketId }: { ticketId: number }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="mt-4 rounded-2xl border-2 border-chrome bg-white/80 p-4">
+    <form onSubmit={onSubmit} className="appliance-card mt-4 p-4">
       <label htmlFor="note" className="text-sm font-bold">
         Add a note
       </label>

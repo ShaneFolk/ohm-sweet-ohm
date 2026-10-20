@@ -117,10 +117,12 @@ export async function seedDatabase() {
 
   // A few activity log entries so the log page isn't empty. Wording matches
   // what the app writes, and times line up with the tickets' hoursAgo.
-  // IDs restart at 1, so TICKETS[i] is always ticket #(i + 1).
-  const logs = [
+  // IDs restart at 1, so TICKETS[i] is always ticket #(i + 1). ticket: null = a sign-in.
+  const logs: { action: string; by: string; ticket: number | null; hoursAgo: number; details: string }[] = [
+    { action: "user_login", by: "dot", ticket: null, hoursAgo: 72, details: "Dot logged in" },
     { action: "ticket_assigned", by: "dot", ticket: 4, hoursAgo: 71, details: "Dot assigned ticket #5 to Gus Gearwhistle" },
     { action: "status_changed", by: "gus", ticket: 4, hoursAgo: 50, details: "Gus changed ticket #5 status from open to resolved" },
+    { action: "user_login", by: "rex", ticket: null, hoursAgo: 28, details: "Rex logged in" },
     { action: "ticket_assigned", by: "dot", ticket: 0, hoursAgo: 29, details: "Dot assigned ticket #1 to Rex Voltage" },
     { action: "status_changed", by: "rex", ticket: 0, hoursAgo: 28, details: "Rex changed ticket #1 status from open to in_progress" },
     { action: "ticket_created", by: "chip", ticket: 3, hoursAgo: 3, details: `Chip created ticket #4: ${TICKETS[3].title}` },
@@ -130,7 +132,8 @@ export async function seedDatabase() {
     q.push({
       text: `INSERT INTO activity_logs (action, user_id, ticket_id, details, details_json, created_at)
              VALUES ($1, ${userId(2)}, ${ticketId(3)}, $4, $5, now() - make_interval(hours => $6))`,
-      params: [l.action, email(l.by), TICKETS[l.ticket].title, l.details, JSON.stringify({ seeded: true }), l.hoursAgo],
+      // A null title makes the ticket subquery return null (no ticket).
+      params: [l.action, email(l.by), l.ticket === null ? null : TICKETS[l.ticket].title, l.details, JSON.stringify({ seeded: true }), l.hoursAgo],
     });
   }
 
