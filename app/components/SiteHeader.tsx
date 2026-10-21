@@ -11,7 +11,8 @@ import LogoutButton from "./LogoutButton";
 export default function SiteHeader() {
   return (
     <header className="border-b-4 border-chrome bg-white/60">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+      {/* On phones the links wrap under the logo, so center both rows there */}
+      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-center gap-3 px-4 py-3 sm:justify-between">
         <Link href="/tickets" className="flex items-center gap-2 font-display text-xl text-teal sm:text-2xl">
           <Atom className="h-7 w-7 shrink-0 sm:h-8 sm:w-8" />
           <span>
@@ -34,7 +35,7 @@ async function UserMenu() {
   const user = await getSessionUser();
 
   return (
-    <div className="flex flex-wrap items-center gap-3 text-sm">
+    <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
       {/* Everyone gets this, logged in or not */}
       <AboutNavLink loggedIn={!!user} />
       {user && <AccountControls user={user} />}

@@ -35,7 +35,7 @@ const LIMITS = [
 
 export default function UnderTheHood() {
   return (
-    <section id="under-the-hood" aria-labelledby="hood-title" className="grid scroll-mt-6 gap-8">
+    <section id="under-the-hood" aria-labelledby="hood-title" className="grid scroll-mt-6 grid-cols-1 gap-8">
       <div>
         <p className="text-sm font-bold uppercase tracking-[0.2em] text-orange">Spec sheet · Model OSO-3000</p>
         <h2 id="hood-title" className="mt-1 font-display text-3xl text-teal">Under the hood</h2>

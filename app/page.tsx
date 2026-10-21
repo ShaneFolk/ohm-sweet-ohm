@@ -48,7 +48,9 @@ const FEATURES = [
 
 export default function HomePage() {
   return (
-    <main className="mx-auto grid w-full max-w-5xl flex-1 gap-12 px-4 py-8">
+    // grid-cols-1 caps the column at the screen width; without it, the wide
+    // database diagram stretches the whole page on phones.
+    <main className="mx-auto grid w-full max-w-5xl flex-1 grid-cols-1 gap-12 px-4 py-8">
       {/* The brochure cover */}
       <section className="appliance-panel grid items-center gap-6 p-6 sm:grid-cols-[auto_1fr] sm:p-10">
         <Robot className="mx-auto h-36 w-auto sm:h-48" />
