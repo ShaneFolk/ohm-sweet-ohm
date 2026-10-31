@@ -5,6 +5,15 @@ Goal: a working, deployed demo that a visitor can log into, with role-based acce
 
 Work through the phases **in order**. Finish and test each phase before starting the next.
 
+> **Status: complete (October 2026).** All six phases are built and live at [ohm-sweet-ohm-five.vercel.app](https://ohm-sweet-ohm-five.vercel.app). This is the original plan, kept as written. The [README](README.md) describes the finished app. The main changes made along the way:
+>
+> - **Home page:** `/` is a public brochure page that explains the project and links to the demo, instead of sending visitors straight to `/login`.
+> - **Per-visitor cap:** every visitor shares the demo accounts, so their open-ticket cap counts per visitor, using a one-way hash of the IP address (`tickets.submitter_ip_hash`).
+> - **Login logging:** successful logins and demo role switches are written to the activity log, which has an All / Tickets / Logins filter. Failed logins are never logged, because demo visitors can read the log.
+> - **Demo routes:** `POST /api/auth/demo-login` and `POST /api/auth/demo-switch` sit alongside the routes in the API table below.
+> - **Ticket fields:** employees choose a priority when filing a ticket, and a ticket's department is always the submitter's department.
+> - **Not done:** a strict Content-Security-Policy was skipped. React already escapes all text, and the nonces it needs would slow Next.js's prebuilt pages.
+
 ---
 
 ## Theme: "Atomic Age Appliance"
@@ -256,19 +265,19 @@ Logged-out visitors are redirected to `/login`. Employees who visit `/admin/logs
 
 ## Security and hardening checklist
 
-- [ ] Passwords hashed with bcrypt (cost 12). Plain-text passwords never stored or logged
-- [ ] `password_hash` never returned from any route
-- [ ] Session = signed JWT (`jose`, HS256) in a cookie that is `httpOnly`, `secure` in production, `sameSite: 'lax'`, expires after 8 hours
-- [ ] `SESSION_SECRET` is at least 32 random characters, stored only in env vars
-- [ ] Every API route checks session + role + ownership on the server
-- [ ] All input validated with Zod (types, required fields, max lengths, allowed values)
-- [ ] All SQL uses parameters. No user input is ever concatenated into SQL
-- [ ] Login errors are generic: "Invalid email or password" (never reveal which part was wrong)
-- [ ] 500 errors return a generic message; details go to the server console only
-- [ ] No public sign-up page (demo accounts only), so strangers can't create users
-- [ ] Security headers in `next.config` (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`)
-- [ ] `.env.local` is in `.gitignore`; secrets live in Vercel's Environment Variables settings
-- [ ] Cron route rejects any request without `Authorization: Bearer <CRON_SECRET>`
+- [x] Passwords hashed with bcrypt (cost 12). Plain-text passwords never stored or logged
+- [x] `password_hash` never returned from any route
+- [x] Session = signed JWT (`jose`, HS256) in a cookie that is `httpOnly`, `secure` in production, `sameSite: 'lax'`, expires after 8 hours
+- [x] `SESSION_SECRET` is at least 32 random characters, stored only in env vars
+- [x] Every API route checks session + role + ownership on the server
+- [x] All input validated with Zod (types, required fields, max lengths, allowed values)
+- [x] All SQL uses parameters. No user input is ever concatenated into SQL
+- [x] Login errors are generic: "Invalid email or password" (never reveal which part was wrong)
+- [x] 500 errors return a generic message; details go to the server console only
+- [x] No public sign-up page (demo accounts only), so strangers can't create users
+- [x] Security headers in `next.config` (`X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-when-cross-origin`)
+- [x] `.env.local` is in `.gitignore`; secrets live in Vercel's Environment Variables settings
+- [x] Cron route rejects any request without `Authorization: Bearer <CRON_SECRET>`
 
 ## Spam and usage limits
 
@@ -337,18 +346,20 @@ CRON_SECRET=         # random string, Vercel sends it to the cron route
 - `lib/auth.ts`: hash/verify passwords, create/read the session cookie, `requireUser()` and `requireRole('it_staff')` helpers
 - Login, logout, and `me` routes
 - `/login` page with demo-login buttons
--Demo role toggle: add a “Viewing as: Employee | IT Tech” switch in the header, shown only when logged in as a demo account (Penny or Rex). It calls POST /api/auth/demo-switch, which verifies the current session is a demo account, then issues a new session cookie for the other demo account. Never switch roles on the client. Rate-limit it like other writes. After switching, refresh the current page; if that page isn’t allowed for the new role (like /admin/logs for Penny), redirect to /tickets.
--Demo login buttons call POST /api/auth/demo-login with { role }, which signs in as the matching demo account (Penny or Rex) on the server. The demo password is never sent to or stored in the browser. Rate-limit it like the login route.
+- Demo role toggle: add a “Viewing as: Employee | IT Tech” switch in the header, shown only when logged in as a demo account (Penny or Rex). It calls POST /api/auth/demo-switch, which verifies the current session is a demo account, then issues a new session cookie for the other demo account. Never switch roles on the client. Rate-limit it like other writes. After switching, refresh the current page; if that page isn’t allowed for the new role (like /admin/logs for Penny), redirect to /tickets.
+- Demo login buttons call POST /api/auth/demo-login with { role }, which signs in as the matching demo account (Penny or Rex) on the server. The demo password is never sent to or stored in the browser. Rate-limit it like the login route.
 - Redirect logged-out visitors to `/login`
 
-**Done when:** -You can log in with the email and password form as any user, refresh the page and stay logged in, and log out.
--A wrong password shows “Invalid email or password.”
--On the login page, “Log in as demo employee” logs in as Penny and “Log in as demo IT tech” logs in as Rex, without typing anything.
--The demo password does not appear anywhere in the browser (check the page source and the Network tab in DevTools).
--While logged in as Penny or Rex, the “Viewing as: Employee | IT Tech” toggle appears in the header, and one click swaps to the other account.
--The toggle does not appear when logged in as a non-demo user, like Dot.
-Calling POST /api/auth/demo-switch in Thunder Client without being logged in as a demo account returns 401 or 403.
--Switching to Penny while on an IT-only page redirects to /tickets. This one can only be fully tested after Phase 4 builds /admin/logs.
+**Done when:**
+
+- You can log in with the email and password form as any user, refresh the page and stay logged in, and log out.
+- A wrong password shows “Invalid email or password.”
+- On the login page, “Log in as demo employee” logs in as Penny and “Log in as demo IT tech” logs in as Rex, without typing anything.
+- The demo password does not appear anywhere in the browser (check the page source and the Network tab in DevTools).
+- While logged in as Penny or Rex, the “Viewing as: Employee | IT Tech” toggle appears in the header, and one click swaps to the other account.
+- The toggle does not appear when logged in as a non-demo user, like Dot.
+- Calling POST /api/auth/demo-switch in Thunder Client without being logged in as a demo account returns 401 or 403.
+- Switching to Penny while on an IT-only page redirects to /tickets. This one can only be fully tested after Phase 4 builds /admin/logs.
 
 ### Phase 3 — Tickets (core)
 - `GET /api/tickets`, `POST /api/tickets`, `GET /api/tickets/[id]`

@@ -42,3 +42,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .neon
+
+# Local notes for the coding assistant (kept off GitHub)
+CLAUDE.md
+AGENTS.md
